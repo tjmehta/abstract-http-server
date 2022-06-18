@@ -30,7 +30,7 @@ export type StartOptsType = ListenOptions & {
 export type StopOptsType = StartableStopOptsType
 
 export default abstract class AbstractHttpServer<
-  Logger extends ServerLoggerType
+  Logger extends ServerLoggerType = ServerLoggerType
 > extends AbstractStartable {
   protected sockets: Set<Socket>
   protected logger: Logger
