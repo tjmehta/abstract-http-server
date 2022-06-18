@@ -11,19 +11,17 @@ import http, {
 
 import BaseError from 'baseerr'
 
+interface ServerLoggerType {
+  error: (...args: Array<any>) => void
+  info: (...args: Array<any>) => void
+}
+
 export class HttpServerStartError extends BaseError<{ opts?: ListenOptions }> {}
 export class HttpServerStopError extends BaseError<{}> {}
 
-export type OptsType = ServerOptions & {
+export type OptsType<Logger> = ServerOptions & {
   port?: number | undefined
-  logger?: {
-    fatal: (...args: Array<any>) => void
-    error: (...args: Array<any>) => void
-    warn: (...args: Array<any>) => void
-    info: (...args: Array<any>) => void
-    debug: (...args: Array<any>) => void
-    trace: (...args: Array<any>) => void
-  }
+  logger: Logger
 }
 
 export type StartOptsType = ListenOptions & {
@@ -31,16 +29,18 @@ export type StartOptsType = ListenOptions & {
 }
 export type StopOptsType = StartableStopOptsType
 
-export default abstract class AbstractHttpServer extends AbstractStartable {
+export default abstract class AbstractHttpServer<
+  Logger extends ServerLoggerType
+> extends AbstractStartable {
   protected sockets: Set<Socket>
-  protected logger: NonNullable<OptsType['logger']>
+  protected logger: Logger
   protected port: number | undefined
   protected server: Server
 
-  constructor(opts: OptsType = {}) {
+  constructor(opts: OptsType<Logger>) {
     super()
     this.sockets = new Set()
-    this.logger = opts.logger ?? console
+    this.logger = opts.logger
     this.server = http.createServer(opts)
     process.nextTick(() => {
       // without this tick, bound functions will not be set and listeners will not be overridden by children.
