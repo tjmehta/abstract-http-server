@@ -17,8 +17,12 @@ export class HttpServerStopError extends BaseError<{}> {}
 export type OptsType = ServerOptions & {
   port?: number | undefined
   logger?: {
-    info: (...args: Array<any>) => void
+    fatal: (...args: Array<any>) => void
     error: (...args: Array<any>) => void
+    warn: (...args: Array<any>) => void
+    info: (...args: Array<any>) => void
+    debug: (...args: Array<any>) => void
+    trace: (...args: Array<any>) => void
   }
 }
 
