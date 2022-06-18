@@ -15,6 +15,7 @@ export class HttpServerStartError extends BaseError<{ opts?: ListenOptions }> {}
 export class HttpServerStopError extends BaseError<{}> {}
 
 export type OptsType = ServerOptions & {
+  port?: number
   logger?: {
     info: (...args: Array<any>) => void
     error: (...args: Array<any>) => void
@@ -29,11 +30,13 @@ export type StopOptsType = StartableStopOptsType
 export default abstract class AbstractHttpServer extends AbstractStartable {
   protected sockets: Set<Socket>
   protected logger: NonNullable<OptsType['logger']>
+  protected port: number | undefined
   protected server: Server
+
   constructor(opts: OptsType = {}) {
     super()
     this.sockets = new Set()
-    this.logger = opts.logger || console
+    this.logger = opts.logger ?? console
     this.server = http.createServer(opts)
     process.nextTick(() => {
       // without this tick, bound functions will not be set and listeners will not be overridden by children.
@@ -45,20 +48,20 @@ export default abstract class AbstractHttpServer extends AbstractStartable {
     this.sockets.add(socket)
     socket.once('close', () => this.sockets.delete(socket))
   }
-  handleRequest(
+  protected handleRequest(
     req: IncomingMessage,
     res: ServerResponse,
   ): void | Promise<void> {
     res.statusCode = 404
     res.end()
   }
-  async _start(opts: StartOptsType = {}) {
+  protected async _start(opts: StartOptsType = {}) {
     await new Promise<void>((resolve, reject) => {
       const { logger, server } = this
       logger.info('http server: starting...', opts)
       const { port, ...listenOpts } = opts
       server.listen({
-        port: port ?? process.env?.PORT ?? 3000,
+        port: port ?? this.port ?? process.env?.PORT ?? 3000,
         ...listenOpts,
       })
       server.once('listening', handleListening)
@@ -80,7 +83,7 @@ export default abstract class AbstractHttpServer extends AbstractStartable {
       }
     })
   }
-  async _stop(opts: StopOptsType = {}) {
+  protected async _stop(opts: StopOptsType = {}) {
     await new Promise<void>((resolve, reject) => {
       const { logger, server, sockets } = this
       logger.info('http server: stopping...', opts)
