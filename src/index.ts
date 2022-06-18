@@ -21,7 +21,9 @@ export type OptsType = ServerOptions & {
   }
 }
 
-export type StartOptsType = ListenOptions
+export type StartOptsType = ListenOptions & {
+  port?: number
+}
 export type StopOptsType = StartableStopOptsType
 
 export default abstract class AbstractHttpServer extends AbstractStartable {
@@ -51,12 +53,13 @@ export default abstract class AbstractHttpServer extends AbstractStartable {
     res.end()
   }
   async _start(opts: StartOptsType = {}) {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       const { logger, server } = this
       logger.info('http server: starting...', opts)
+      const { port, ...listenOpts } = opts
       server.listen({
-        port: 3000,
-        ...opts,
+        port: port ?? process.env?.PORT ?? 3000,
+        ...listenOpts,
       })
       server.once('listening', handleListening)
       server.once('error', handleError)
@@ -78,7 +81,7 @@ export default abstract class AbstractHttpServer extends AbstractStartable {
     })
   }
   async _stop(opts: StopOptsType = {}) {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       const { logger, server, sockets } = this
       logger.info('http server: stopping...', opts)
       server.close((err) => {
