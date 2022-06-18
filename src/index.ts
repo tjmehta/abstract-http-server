@@ -15,7 +15,7 @@ export class HttpServerStartError extends BaseError<{ opts?: ListenOptions }> {}
 export class HttpServerStopError extends BaseError<{}> {}
 
 export type OptsType = ServerOptions & {
-  port?: number
+  port?: number | undefined
   logger?: {
     info: (...args: Array<any>) => void
     error: (...args: Array<any>) => void
@@ -23,7 +23,7 @@ export type OptsType = ServerOptions & {
 }
 
 export type StartOptsType = ListenOptions & {
-  port?: number
+  port?: number | undefined
 }
 export type StopOptsType = StartableStopOptsType
 
