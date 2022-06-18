@@ -44,8 +44,8 @@ export default abstract class AbstractHttpServer<
     this.server = http.createServer(opts)
     process.nextTick(() => {
       // without this tick, bound functions will not be set and listeners will not be overridden by children.
-      this.server.on('connection', this.handleConnection)
-      this.server.on('request', this.handleRequest)
+      this.server.on('connection', this.handleConnection.bind(this))
+      this.server.on('request', this.handleRequest.bind(this))
     })
   }
   protected handleConnection = (socket: Socket) => {
