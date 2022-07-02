@@ -41,6 +41,7 @@ export default abstract class AbstractHttpServer<
     super()
     this.sockets = new Set()
     this.logger = opts.logger
+    this.port = opts.port
     this.server = http.createServer(opts)
     process.nextTick(() => {
       // without this tick, bound functions will not be set and listeners will not be overridden by children.
