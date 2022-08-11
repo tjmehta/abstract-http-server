@@ -50,8 +50,15 @@ export default abstract class AbstractHttpServer<
     })
   }
   protected handleConnection = (socket: Socket) => {
+    const self = this
     this.sockets.add(socket)
-    socket.once('close', () => this.sockets.delete(socket))
+    socket.once('close', handleClose)
+    socket.once('error', handleClose)
+    function handleClose() {
+      socket.removeListener('close', handleClose)
+      socket.removeListener('error', handleClose)
+      self.sockets.delete(socket)
+    }
   }
   protected handleRequest(
     req: IncomingMessage,
