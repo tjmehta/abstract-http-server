@@ -53,11 +53,9 @@ export default abstract class AbstractHttpServer<
     const self = this
     this.sockets.add(socket)
     socket.once('close', handleClose)
-    socket.once('end', handleClose)
     socket.once('error', handleClose)
     function handleClose() {
       socket.removeListener('close', handleClose)
-      socket.removeListener('end', handleClose)
       socket.removeListener('error', handleClose)
       self.sockets.delete(socket)
     }
